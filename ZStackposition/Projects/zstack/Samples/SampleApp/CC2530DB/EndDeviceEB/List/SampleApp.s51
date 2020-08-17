@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                            /
-// IAR C/C++ Compiler V8.10.3.10338/W32 for 8051        17/Aug/2020  21:21:23 /
+// IAR C/C++ Compiler V8.10.3.10338/W32 for 8051        17/Aug/2020  21:33:29 /
 // Copyright 2004-2011 IAR Systems AB.                                        /
 //                                                                            /
 //    Core               =  plain                                             /
@@ -9,15 +9,17 @@
 //    Calling convention =  xdata reentrant                                   /
 //    Constant location  =  data_rom                                          /
 //    Dptr setup         =  1,16                                              /
-//    Source file        =  D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\Source\SampleApp.c                     /
-//    Command line       =  -f D:\Project\ZStackposition\Projects\zstack\Samp /
-//                          les\SampleApp\CC2530DB\..\..\..\Tools\CC2530DB\f8 /
-//                          wEndev.cfg (-DCPU32MHZ -DROOT=__near_func         /
-//                          -DMAC_CFG_TX_DATA_MAX=3 -DMAC_CFG_TX_MAX=6        /
-//                          -DMAC_CFG_RX_MAX=3) -f D:\Project\ZStackposition\ /
-//                          Projects\zstack\Samples\SampleApp\CC2530DB\..\..\ /
-//                          ..\Tools\CC2530DB\f8wConfig.cfg (-DZIGBEEPRO      /
+//    Source file        =  D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\Source\Sample /
+//                          App.c                                             /
+//    Command line       =  -f D:\Project\GitHub\RSSI_zigbee_final\ZStackposi /
+//                          tion\Projects\zstack\Samples\SampleApp\CC2530DB\. /
+//                          .\..\..\Tools\CC2530DB\f8wEndev.cfg (-DCPU32MHZ   /
+//                          -DROOT=__near_func -DMAC_CFG_TX_DATA_MAX=3        /
+//                          -DMAC_CFG_TX_MAX=6 -DMAC_CFG_RX_MAX=3) -f         /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\Tools\CC2530DB\f8wConfig.cfg (-DZIGBEEPRO    /
 //                          -DSECURE=0 -DZG_SECURE_DYNAMIC=0 -DREFLECTOR      /
 //                          -DDEFAULT_CHANLIST=0x00000800                     /
 //                          -DZDAPP_CONFIG_PAN_ID=0xFFF1                      /
@@ -40,76 +42,88 @@
 //                          __code" -DGENERIC=__generic                       /
 //                          -DRFD_RCVC_ALWAYS_ON=FALSE -DPOLL_RATE=1000       /
 //                          -DQUEUED_POLL_RATE=100 -DRESPONSE_POLL_RATE=100)  /
-//                          -DREJOIN_POLL_RATE=440 D:\Project\ZStackposition\ /
-//                          Projects\zstack\Samples\SampleApp\Source\SampleAp /
-//                          p.c -D NWK_AUTO_POLL -D ZTOOL_P1 -D MT_TASK -D    /
-//                          MT_SYS_FUNC -D MT_ZDO_FUNC -D                     /
-//                          LCD_SUPPORTED=DEBUG -lC                           /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\EndDeviceEB\List\ -lA         /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\EndDeviceEB\List\             /
-//                          --diag_suppress Pe001,Pa010 -o                    /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\EndDeviceEB\Obj\ -e           /
-//                          --no_code_motion --debug --core=plain             /
-//                          --dptr=16,1 --data_model=large                    /
-//                          --code_model=banked --calling_convention=xdata_re /
-//                          entrant --place_constants=data_rom                /
-//                          --nr_virtual_regs 16 -I                           /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\ -I                           /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\Source\ -I                 /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\ZMain\TI2530DB\ -I   /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\hal /
-//                          \include\ -I D:\Project\ZStackposition\Projects\z /
-//                          stack\Samples\SampleApp\CC2530DB\..\..\..\..\..\C /
-//                          omponents\hal\target\CC2530EB\ -I                 /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\mac /
-//                          \include\ -I D:\Project\ZStackposition\Projects\z /
-//                          stack\Samples\SampleApp\CC2530DB\..\..\..\..\..\C /
-//                          omponents\mac\high_level\ -I                      /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\mac /
-//                          \low_level\srf04\ -I D:\Project\ZStackposition\Pr /
-//                          ojects\zstack\Samples\SampleApp\CC2530DB\..\..\.. /
-//                          \..\..\Components\mac\low_level\srf04\single_chip /
-//                          \ -I D:\Project\ZStackposition\Projects\zstack\Sa /
-//                          mples\SampleApp\CC2530DB\..\..\..\..\..\Component /
-//                          s\mt\ -I D:\Project\ZStackposition\Projects\zstac /
-//                          k\Samples\SampleApp\CC2530DB\..\..\..\..\..\Compo /
-//                          nents\osal\include\ -I D:\Project\ZStackposition\ /
-//                          Projects\zstack\Samples\SampleApp\CC2530DB\..\..\ /
-//                          ..\..\..\Components\services\saddr\ -I            /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\ser /
-//                          vices\sdata\ -I D:\Project\ZStackposition\Project /
-//                          s\zstack\Samples\SampleApp\CC2530DB\..\..\..\..\. /
-//                          .\Components\stack\af\ -I                         /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\sta /
-//                          ck\nwk\ -I D:\Project\ZStackposition\Projects\zst /
-//                          ack\Samples\SampleApp\CC2530DB\..\..\..\..\..\Com /
-//                          ponents\stack\sapi\ -I D:\Project\ZStackposition\ /
-//                          Projects\zstack\Samples\SampleApp\CC2530DB\..\..\ /
-//                          ..\..\..\Components\stack\sec\ -I                 /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\sta /
-//                          ck\sys\ -I D:\Project\ZStackposition\Projects\zst /
-//                          ack\Samples\SampleApp\CC2530DB\..\..\..\..\..\Com /
-//                          ponents\stack\zdo\ -I D:\Project\ZStackposition\P /
-//                          rojects\zstack\Samples\SampleApp\CC2530DB\..\..\. /
-//                          .\..\..\Components\zmac\ -I                       /
-//                          D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\..\..\..\..\..\Components\zma /
-//                          c\f8w\ -Ohz --require_prototypes                  /
-//    List file          =  D:\Project\ZStackposition\Projects\zstack\Samples /
-//                          \SampleApp\CC2530DB\EndDeviceEB\List\SampleApp.s5 /
-//                          1                                                 /
+//                          -DREJOIN_POLL_RATE=440 D:\Project\GitHub\RSSI_zig /
+//                          bee_final\ZStackposition\Projects\zstack\Samples\ /
+//                          SampleApp\Source\SampleApp.c -D NWK_AUTO_POLL -D  /
+//                          ZTOOL_P1 -D MT_TASK -D MT_SYS_FUNC -D             /
+//                          MT_ZDO_FUNC -D LCD_SUPPORTED=DEBUG -lC            /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\EndD /
+//                          eviceEB\List\ -lA D:\Project\GitHub\RSSI_zigbee_f /
+//                          inal\ZStackposition\Projects\zstack\Samples\Sampl /
+//                          eApp\CC2530DB\EndDeviceEB\List\ --diag_suppress   /
+//                          Pe001,Pa010 -o D:\Project\GitHub\RSSI_zigbee_fina /
+//                          l\ZStackposition\Projects\zstack\Samples\SampleAp /
+//                          p\CC2530DB\EndDeviceEB\Obj\ -e --no_code_motion   /
+//                          --debug --core=plain --dptr=16,1                  /
+//                          --data_model=large --code_model=banked            /
+//                          --calling_convention=xdata_reentrant              /
+//                          --place_constants=data_rom --nr_virtual_regs 16   /
+//                          -I D:\Project\GitHub\RSSI_zigbee_final\ZStackposi /
+//                          tion\Projects\zstack\Samples\SampleApp\CC2530DB\  /
+//                          -I D:\Project\GitHub\RSSI_zigbee_final\ZStackposi /
+//                          tion\Projects\zstack\Samples\SampleApp\CC2530DB\. /
+//                          .\Source\ -I D:\Project\GitHub\RSSI_zigbee_final\ /
+//                          ZStackposition\Projects\zstack\Samples\SampleApp\ /
+//                          CC2530DB\..\..\..\ZMain\TI2530DB\ -I              /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\hal\include\ -I             /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\hal\target\CC2530EB\ -I     /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\mac\include\ -I             /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\mac\high_level\ -I          /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\mac\low_level\srf04\ -I     /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\mac\low_level\srf04\single_ /
+//                          chip\ -I D:\Project\GitHub\RSSI_zigbee_final\ZSta /
+//                          ckposition\Projects\zstack\Samples\SampleApp\CC25 /
+//                          30DB\..\..\..\..\..\Components\mt\ -I             /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\osal\include\ -I            /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\services\saddr\ -I          /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\services\sdata\ -I          /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\stack\af\ -I                /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\stack\nwk\ -I               /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\stack\sapi\ -I              /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\stack\sec\ -I               /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\stack\sys\ -I               /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\stack\zdo\ -I               /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\zmac\ -I                    /
+//                          D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\..\. /
+//                          .\..\..\..\Components\zmac\f8w\ -Ohz              /
+//                          --require_prototypes                              /
+//    List file          =  D:\Project\GitHub\RSSI_zigbee_final\ZStackpositio /
+//                          n\Projects\zstack\Samples\SampleApp\CC2530DB\EndD /
+//                          eviceEB\List\SampleApp.s51                        /
 //                                                                            /
 //                                                                            /
 ///////////////////////////////////////////////////////////////////////////////
@@ -569,7 +583,7 @@ SampleApp_SendPeriodicMessage SYMBOL "SampleApp_SendPeriodicMessage"
         FUNCTION ??osal_start_timerEx?relay,00H
         EXTERN zgDeviceLogicalType
 
-// D:\Project\ZStackposition\Projects\zstack\Samples\SampleApp\Source\SampleApp.c
+// D:\Project\GitHub\RSSI_zigbee_final\ZStackposition\Projects\zstack\Samples\SampleApp\Source\SampleApp.c
 //    1 /**************************************************************************************************
 //    2   Filename:       SampleApp.c
 //    3   Revised:        $Date: 2009-03-18 15:56:27 -0700 (Wed, 18 Mar 2009) $
@@ -1356,8 +1370,8 @@ SampleApp_ProcessEvent:
 //  309                               SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT );
 ??SampleApp_ProcessEvent_3:
         ; Setup parameters for call to function osal_start_timerEx
-        MOV     R4,#-0x18
-        MOV     R5,#0x3
+        MOV     R4,#-0xc
+        MOV     R5,#0x1
         MOV     R2,#0x1
         MOV     R3,#0x0
         MOV     DPTR,#SampleApp_TaskID
@@ -1467,10 +1481,10 @@ SampleApp_ProcessEvent:
         LCALL   ??osal_rand?relay
         ; Setup parameters for call to function osal_start_timerEx
         MOV     A,R2
-        ADD     A,#-0x18
+        ADD     A,#-0xc
         MOV     R4,A
         CLR     A
-        ADDC    A,#0x3
+        ADDC    A,#0x1
         MOV     R5,A
         MOV     R2,#0x1
         MOV     R3,#0x0

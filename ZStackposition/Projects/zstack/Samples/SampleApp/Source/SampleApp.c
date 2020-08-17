@@ -424,7 +424,7 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
   switch ( pkt->clusterId )
   {
     case SAMPLEAPP_BLIND_CLUSTERID://参考节点接收盲节点数据进行处理
-      if(zgDeviceLogicalType == ZG_DEVICETYPE_ROUTER)
+      if(zgDeviceLogicalType == ZG_DEVICETYPE_ROUTER)//如果是路由器的话就开始处理数据
       {
       rssi_val[rssi_index++] = ((~pkt->rssi)+1); // 得到rssi值并保存   
       if(rssi_index == 10)//当接收到10次rssi后进行平均值计算

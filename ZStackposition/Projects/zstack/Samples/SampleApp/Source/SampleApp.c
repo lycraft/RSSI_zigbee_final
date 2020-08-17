@@ -77,6 +77,7 @@
 
 #include "string.h"
 #include "stdlib.h"
+#include "math.h"
 /*********************************************************************
  * MACROS
  */
@@ -92,6 +93,16 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
+uint16 dA = 0, dB = 0, dC = 0;
+
+//串口
+#define MY_DEFINI_UART_PORT 0 
+#ifndef RX_MAX_LENGTH
+#define RX_MAX_LENGTH 20
+#endif
+uint8 RX_BUFFER[RX_MAX_LENGTH];
+uint8 RX_Length;
+void UART_CallBackFunction(uint8 port, uint8 event);//当串口有数据到来时，调用此函数
 
 // This list should be filled with Application specific Cluster IDs.
 const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
@@ -191,12 +202,30 @@ void SampleApp_Init( uint8 task_id )
   SampleApp_NwkState = DEV_INIT;
   SampleApp_TransID = 0;
   
+  halUARTCfg_t uartConfig;//初始化串口使用
   //------------------------配置串口---------------------------------
   MT_UartInit();                    //串口初始化
   MT_UartRegisterTaskID(task_id);   //注册串口任务
   HalUARTWrite(0,"UartInit OK\n", sizeof("UartInit OK\n"));
-  //HalUARTWrite(0,"UartInit OK\n", sizeof("UartInit OK\n")-1);
   //-----------------------------------------------------------------
+  //配置ESP8266初始化------------------------------------------------
+  //ESP8266重启  RST引脚拉低500ms
+  
+  //恢复出厂设置
+  HalUARTWrite(0,"AT+RESTORE\r\n", sizeof("AT+RESTORE\r\n"));
+  //等待收到ok字符
+  
+//  AT+CWMODE=1
+//  AT+CWJAP=
+//  AT+CIPMUX=0
+//  AT+CIPSTART=
+//  AT+CIPMODE=1
+//  AT+CIPSEND
+  
+  
+  
+  
+  //------------------------------------------------------------------
   
   // Device hardware initialization can be added here or in main() (Zmain.c).
   // If the hardware is application specific - add it here.
@@ -256,6 +285,16 @@ void SampleApp_Init( uint8 task_id )
   osal_memcpy( SampleApp_Group.name, "Group 1", 7  );
   aps_AddGroup( SAMPLEAPP_ENDPOINT, &SampleApp_Group );
 
+  
+  //串口初始化
+
+  uartConfig.callBackFunc       =UART_CallBackFunction;
+  HalUARTOpen(MY_DEFINI_UART_PORT,&uartConfig);//使用自定义的串口初始化变量来开启串口通讯
+  
+
+  
+  
+  
 #if defined ( LCD_SUPPORTED )
   HalLcdWriteString( "SampleApp", HAL_LCD_LINE_1 );
 #endif
@@ -446,7 +485,7 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
             val+=rssi_val[i];//去除最大最小值之后的8次rssi值的总和
         }          
         val >>= 3;//右移为除法，右移三维表示除以8（val为8次RSSI值的和）
-      
+      HalLcdWriteValue( val, 10, HAL_LCD_LINE_3);//参考节点OLED 屏幕显示出本次平均信号值
         //      rssi_s[0] ='A';
         rssi_s[0] = val/100+0x30;//ASCII编码 0x30对应数字0 这里加上这个数就是要显示数字字符
         rssi_s[1] = val%100/10+0x30;
@@ -466,9 +505,23 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
   case SAMPLEAPP_ROUT_ANODE_CLUSTERID://协调器从锚节点接收数据
     if(zgDeviceLogicalType == ZG_DEVICETYPE_COORDINATOR)
     {
+      uint16 rssi = 0, d = 0;
+      uint8 *process;
+      uint8 temp[256]={32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32};  
+      
       HalUARTWrite(0,"A",1);
       HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength); //输出接收到的数据 
       HalUARTWrite(0,"\n", 1); // 回车换行 
+      
+      process = pkt->cmd.Data;
+      rssi = (process[0] - 0x30) * 100;
+      rssi = (process[1] - 0x30) * 10 + rssi;
+      rssi = (process[2] - 0x30) + rssi;
+      
+      d=(uint16)1000*pow(10,(rssi-rssi_A)/10/rssi_n);
+      dA = d;
+      sprintf((char*)temp,"moc%05d%05d%05dadc\r\n", dA, dB, dC);
+      HalUARTWrite(0,temp,40 ); 
     }
     
     break;
@@ -573,4 +626,22 @@ void SampleApp_P2P_SendMessage( void )//参考节点点播给协调器发距离
   {
     // Error occurred in request to send.
   }
+}
+
+static void UART_CallBackFunction(uint8 port, uint8 event)
+{
+  uint8 RX_Flag = 0;
+  RX_Length = 0;//接收字符串长度
+  RX_Flag = RX_Length = Hal_UART_RxBufLen(MY_DEFINI_UART_PORT);// 字符串长度
+  
+  if(RX_Flag != 0)// 有数据存在
+  {
+    //读取串口数据
+    HalUARTRead(MY_DEFINI_UART_PORT,RX_BUFFER,RX_Length);
+    {
+      //数据传回串口调用hal_uart.h接口函数
+      HalUARTWrite(MY_DEFINI_UART_PORT,RX_BUFFER,RX_Length);
+    }
+  }
+  
 }

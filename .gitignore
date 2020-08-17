@@ -1,3 +1,9 @@
 *.dep
 *.wsdt
 *.pbd
+*.d51
+*.lst
+*.s51
+*.r51
+*.hex
+*.map

@@ -72,7 +72,7 @@ extern "C"
 
   
 // Send Message Timeout
-#define SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT   500     // Every 0.5 seconds
+#define SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT   200     // Every 0.2 seconds
 
 // Application Events (OSAL) - These are bit weighted definitions.
 #define SAMPLEAPP_SEND_PERIODIC_MSG_EVT       0x0001
@@ -86,6 +86,10 @@ extern "C"
 #define rssi_A    37
 #define rssi_n    2
 
+#define ReferenceProfession     0
+#define BlindProfession         1
+#define CoorProfession          2
+  
 /*********************************************************************
  * MACROS
  */

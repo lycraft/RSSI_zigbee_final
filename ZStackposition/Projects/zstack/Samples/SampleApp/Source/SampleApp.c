@@ -78,6 +78,7 @@
 #include "string.h"
 #include "stdlib.h"
 #include "math.h"
+#include "stdio.h"
 /*********************************************************************
  * MACROS
  */
@@ -93,16 +94,20 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-uint16 dA = 0, dB = 0, dC = 0;
+//uint8 FunctionProfession = ReferenceProfession;//该设备是参考节点
+//uint8 FunctionProfession = BlindProfession;//该设备是盲节点
+uint8 FunctionProfession = CoorProfession;//该设备是协调器
 
-//串口
-#define MY_DEFINI_UART_PORT 0 
-#ifndef RX_MAX_LENGTH
-#define RX_MAX_LENGTH 20
-#endif
-uint8 RX_BUFFER[RX_MAX_LENGTH];
-uint8 RX_Length;
-void UART_CallBackFunction(uint8 port, uint8 event);//当串口有数据到来时，调用此函数
+uint16 rssiA = 0, rssiB = 0, rssiC = 0;
+uint8 SendCount = 0;
+//串口接收数据
+//#define MY_DEFINI_UART_PORT 0 
+//#ifndef RX_MAX_LENGTH
+//#define RX_MAX_LENGTH 32
+//#endif
+//uint8 RX_BUFFER[RX_MAX_LENGTH];
+//uint8 RX_Length;
+//void UART_CallBackFunction(uint8 port, uint8 event);//当串口有数据到来时，调用此函数
 
 // This list should be filled with Application specific Cluster IDs.
 const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
@@ -181,7 +186,7 @@ void SampleApp_P2P_SendMessage(void);//参考节点点播
 /*********************************************************************
  * PUBLIC FUNCTIONS
  */
-
+bool REV_Ack_OK(void);
 /*********************************************************************
  * @fn      SampleApp_Init
  *
@@ -202,7 +207,7 @@ void SampleApp_Init( uint8 task_id )
   SampleApp_NwkState = DEV_INIT;
   SampleApp_TransID = 0;
   
-  halUARTCfg_t uartConfig;//初始化串口使用
+//  halUARTCfg_t uartConfig;//初始化串口使用
   //------------------------配置串口---------------------------------
   MT_UartInit();                    //串口初始化
   MT_UartRegisterTaskID(task_id);   //注册串口任务
@@ -212,9 +217,8 @@ void SampleApp_Init( uint8 task_id )
   //ESP8266重启  RST引脚拉低500ms
   
   //恢复出厂设置
-  HalUARTWrite(0,"AT+RESTORE\r\n", sizeof("AT+RESTORE\r\n"));
+//  HalUARTWrite(0,"AT+RESTORE\r\n", sizeof("AT+RESTORE\r\n"));
   //等待收到ok字符
-  
 //  AT+CWMODE=1
 //  AT+CWJAP=
 //  AT+CIPMUX=0
@@ -222,7 +226,7 @@ void SampleApp_Init( uint8 task_id )
 //  AT+CIPMODE=1
 //  AT+CIPSEND
   
-  
+//  HalUARTWrite(0,"AT+CIPSTART=\"TCP\",\"192.168.31.194\",80\r\n", sizeof("AT+CIPSTART=\"TCP\",\"192.168.31.194\",6000\r\n"));
   
   
   //------------------------------------------------------------------
@@ -287,9 +291,16 @@ void SampleApp_Init( uint8 task_id )
 
   
   //串口初始化
-
-  uartConfig.callBackFunc       =UART_CallBackFunction;
-  HalUARTOpen(MY_DEFINI_UART_PORT,&uartConfig);//使用自定义的串口初始化变量来开启串口通讯
+//  uartConfig.configured       = TRUE;
+//  uartConfig.baudRate         = HAL_UART_BR_115200;
+//  uartConfig.flowControl      = FALSE;
+//  uartConfig.flowControlThreshold = MT_UART_THRESHOLD;//???????
+//  uartConfig.rx.maxBufSize     = 200;
+//  uartConfig.tx.maxBufSize     =200;
+//  uartConfig.idleTimeout       = MT_UART_IDLE_TIMEOUT;
+//  uartConfig.intEnable          =TRUE;
+//  uartConfig.callBackFunc       =UART_CallBackFunction;
+//  HalUARTOpen(MY_DEFINI_UART_PORT,&uartConfig);//使用自定义的串口初始化变量来开启串口通讯
   
 
   
@@ -325,17 +336,18 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
     {
       switch ( MSGpkt->hdr.event )
       {
-        // Received when a key is pressed
+        // 检测到有按键按下的时候执行这里的函数
         case KEY_CHANGE:
           SampleApp_HandleKeys( ((keyChange_t *)MSGpkt)->state, ((keyChange_t *)MSGpkt)->keys );
           break;
 
-        // Received when a messages is received (OTA) for this endpoint
+        // 设备收到无线信息的时候执行这里的函数
         case AF_INCOMING_MSG_CMD:
           SampleApp_MessageMSGCB( MSGpkt );
+
           break;
 
-        // Received whenever the device changes state in the network
+        // 设备网络发生改变时执行这里的函数 基本只执行一次
         case ZDO_STATE_CHANGE:
           SampleApp_NwkState = (devStates_t)(MSGpkt->hdr.status);
           if ( //(SampleApp_NwkState == DEV_ZB_COORD)|| //协调器只接收不发送
@@ -372,17 +384,17 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   //  (setup in SampleApp_Init()).
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )//参考节点不广播的！
   {
-    if(zgDeviceLogicalType == ZG_DEVICETYPE_ENDDEVICE)//如果是终端就广播
+    if(zgDeviceLogicalType == ZG_DEVICETYPE_ROUTER && FunctionProfession == BlindProfession)//如果是路由器而且是盲节点就广播
     {
-      // Send the periodic message
-    SampleApp_SendPeriodicMessage();
+      // 发送周期性的消息
+      SampleApp_SendPeriodicMessage();
 
-    // Setup to send message again in normal period (+ a little jitter)
-    osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
+      // Setup to send message again in normal period (+ a little jitter)
+      osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
 
-    // return unprocessed events
-    return (events ^ SAMPLEAPP_SEND_PERIODIC_MSG_EVT);
+      // return unprocessed events
+      return (events ^ SAMPLEAPP_SEND_PERIODIC_MSG_EVT);
     }
     
   }
@@ -416,28 +428,12 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
      * This device will not receive the Flash Command from this
      * device (even if it belongs to group 1).
      */
-    SampleApp_SendFlashMessage( SAMPLEAPP_FLASH_DURATION );
+//    SampleApp_SendFlashMessage( SAMPLEAPP_FLASH_DURATION );
   }
 
   if ( keys & HAL_KEY_SW_2 )
   {
-    /* The Flashr Command is sent to Group 1.
-     * This key toggles this device in and out of group 1.
-     * If this device doesn't belong to group 1, this application
-     * will not receive the Flash command sent to group 1.
-     */
-    aps_Group_t *grp;
-    grp = aps_FindGroup( SAMPLEAPP_ENDPOINT, SAMPLEAPP_FLASH_GROUP );
-    if ( grp )
-    {
-      // Remove from the group
-      aps_RemoveGroup( SAMPLEAPP_ENDPOINT, SAMPLEAPP_FLASH_GROUP );
-    }
-    else
-    {
-      // Add to the flash group
-      aps_AddGroup( SAMPLEAPP_ENDPOINT, &SampleApp_Group );
-    }
+    
   }
 }
 
@@ -463,39 +459,39 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
   switch ( pkt->clusterId )
   {
     case SAMPLEAPP_BLIND_CLUSTERID://参考节点接收盲节点数据进行处理
-      if(zgDeviceLogicalType == ZG_DEVICETYPE_ROUTER)//如果是路由器的话就开始处理数据
+      if(zgDeviceLogicalType == ZG_DEVICETYPE_ROUTER && FunctionProfession == ReferenceProfession)//参考节点路由器处理数据
       {
-      rssi_val[rssi_index++] = ((~pkt->rssi)+1); // 得到rssi值并保存   
-      if(rssi_index == 10)//当接收到10次rssi后进行平均值计算
-      {   
-        uint8 i,max_i,min_i; 
-        uint16 val = 0;
-        //去除最大最小值，剩下的求取平均值
-        max_i = min_i = 0;          
-        for(i = 1; i<10; i++)
-        {
-          if(rssi_val[i]>rssi_val[max_i])
-            max_i = i;              
-          if(rssi_val[i]<rssi_val[min_i])
-            min_i = i;
-       }          
-        for(i = 0; i<10; i++)
-        {
-          if(i!=max_i && i!=min_i)
-            val+=rssi_val[i];//去除最大最小值之后的8次rssi值的总和
+        rssi_val[rssi_index++] = ((~pkt->rssi)+1); // 得到rssi值并保存   
+        if(rssi_index == 10)//当接收到10次rssi后进行平均值计算
+        {   
+          uint8 i,max_i,min_i; 
+          uint16 val = 0;
+          //去除最大最小值，剩下的求取平均值
+          max_i = min_i = 0;          
+          for(i = 1; i<10; i++)
+          {
+            if(rssi_val[i]>rssi_val[max_i])
+              max_i = i;              
+            if(rssi_val[i]<rssi_val[min_i])
+              min_i = i;
         }          
-        val >>= 3;//右移为除法，右移三维表示除以8（val为8次RSSI值的和）
-      HalLcdWriteValue( val, 10, HAL_LCD_LINE_3);//参考节点OLED 屏幕显示出本次平均信号值
-        //      rssi_s[0] ='A';
-        rssi_s[0] = val/100+0x30;//ASCII编码 0x30对应数字0 这里加上这个数就是要显示数字字符
-        rssi_s[1] = val%100/10+0x30;
-        rssi_s[2] = val%10+0x30;//以上三句分别代表得到：米，分米，厘米 
+          for(i = 0; i<10; i++)
+          {
+            if(i!=max_i && i!=min_i)
+              val+=rssi_val[i];//去除最大最小值之后的8次rssi值的总和
+          }          
+          val >>= 3;//右移为除法，右移三维表示除以8（val为8次RSSI值的和）
+        HalLcdWriteValue( val, 10, HAL_LCD_LINE_3);//参考节点OLED 屏幕显示出本次平均信号值
+          //      rssi_s[0] ='A';
+          rssi_s[0] = val/100+0x30;//ASCII编码 0x30对应数字0 这里加上这个数就是要显示数字字符
+          rssi_s[1] = val%100/10+0x30;
+          rssi_s[2] = val%10+0x30;//以上三句分别代表得到：米，分米，厘米 
 
-        SampleApp_P2P_SendMessage();
-        rssi_index = 0;//每收到十次RSSI值计算一次需要的RSSI均值
+          SampleApp_P2P_SendMessage();
+          rssi_index = 0;//每收到十次RSSI值计算一次需要的RSSI均值
 
       
-      }
+        }
       }
 
       
@@ -505,40 +501,83 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
   case SAMPLEAPP_ROUT_ANODE_CLUSTERID://协调器从锚节点接收数据
     if(zgDeviceLogicalType == ZG_DEVICETYPE_COORDINATOR)
     {
-      uint16 rssi = 0, d = 0;
+      uint16 rssi = 0, lcdrs = 0;
       uint8 *process;
-      uint8 temp[256]={32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32};  
+      uint8 temp[14]={32,32,32,32,32,32,32,32,32,32,32,32,32,32};
       
-      HalUARTWrite(0,"A",1);
-      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength); //输出接收到的数据 
-      HalUARTWrite(0,"\n", 1); // 回车换行 
+//      HalUARTWrite(0,"A",1);
+//      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength); //输出接收到的数据 
+//      HalUARTWrite(0,"\n", 1); // 回车换行 
       
       process = pkt->cmd.Data;
       rssi = (process[0] - 0x30) * 100;
       rssi = (process[1] - 0x30) * 10 + rssi;
       rssi = (process[2] - 0x30) + rssi;
       
-      d=(uint16)1000*pow(10,(rssi-rssi_A)/10/rssi_n);
-      dA = d;
-      sprintf((char*)temp,"moc%05d%05d%05dadc\r\n", dA, dB, dC);
-      HalUARTWrite(0,temp,40 ); 
+      rssiA = rssi;
+       
+      SendCount++;
+      if(SendCount == 3)
+      {
+        lcdrs = rssiA * 1000 + rssiB;
+        HalLcdWriteValue( lcdrs, 10, HAL_LCD_LINE_3);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
+        HalLcdWriteValue( rssiC, 10, HAL_LCD_LINE_4);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
+        sprintf(temp,"A%03dB%03dC%03d\r\n", rssiA, rssiB, rssiC);
+        HalUARTWrite(0,temp,14 );
+        SendCount = 0;
+      }
     }
     
     break;
   case SAMPLEAPP_ROUT_BNODE_CLUSTERID://协调器从锚节点接收数据
     if(zgDeviceLogicalType == ZG_DEVICETYPE_COORDINATOR)
-    {
-      HalUARTWrite(0,"B",1);
-      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength); //输出接收到的数据 
-      HalUARTWrite(0,"\n", 1); // 回车换行 
+    {   
+      uint16 rssi = 0, lcdrs = 0;
+      uint8 *process;
+      uint8 temp[14]={32,32,32,32,32,32,32,32,32,32,32,32,32,32};
+      
+      
+      process = pkt->cmd.Data;
+      rssi = (process[0] - 0x30) * 100;
+      rssi = (process[1] - 0x30) * 10 + rssi;
+      rssi = (process[2] - 0x30) + rssi;
+      
+      rssiB = rssi;
+      SendCount++;
+      if(SendCount == 3)
+      {
+        lcdrs = rssiA * 1000 + rssiB;
+        HalLcdWriteValue( lcdrs, 10, HAL_LCD_LINE_3);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
+        HalLcdWriteValue( rssiC, 10, HAL_LCD_LINE_4);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
+        sprintf(temp,"A%03dB%03dC%03d\r\n", rssiA, rssiB, rssiC);
+        HalUARTWrite(0,temp,14 );
+        SendCount = 0;
+      } 
     }
     break;
   case SAMPLEAPP_ROUT_CNODE_CLUSTERID://协调器从锚节点接收数据
     if(zgDeviceLogicalType == ZG_DEVICETYPE_COORDINATOR)
     {
-      HalUARTWrite(0,"C",1);
-      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength); //输出接收到的数据 
-      HalUARTWrite(0,"\n", 1); // 回车换行 
+      uint16 rssi = 0, lcdrs = 0;
+      uint8 *process;
+      uint8 temp[14]={32,32,32,32,32,32,32,32,32,32,32,32,32,32};
+      
+      process = pkt->cmd.Data;
+      rssi = (process[0] - 0x30) * 100;
+      rssi = (process[1] - 0x30) * 10 + rssi;
+      rssi = (process[2] - 0x30) + rssi;
+      
+      rssiC = rssi;
+      SendCount++;
+      if(SendCount == 3)
+      {
+        lcdrs = rssiA * 1000 + rssiB;
+        HalLcdWriteValue( lcdrs, 10, HAL_LCD_LINE_3);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
+        HalLcdWriteValue( rssiC, 10, HAL_LCD_LINE_4);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
+        sprintf(temp,"A%03dB%03dC%03d\r\n", rssiA, rssiB, rssiC);
+        HalUARTWrite(0,temp,14 );
+        SendCount = 0;
+      } 
     }
     break;
       
@@ -614,7 +653,7 @@ void SampleApp_P2P_SendMessage( void )//参考节点点播给协调器发距离
 {
    if ( AF_DataRequest( &SampleApp_p2p_DstAddr, 
                       &SampleApp_epDesc,
-                      SAMPLEAPP_ROUT_BNODE_CLUSTERID,
+                      SAMPLEAPP_ROUT_CNODE_CLUSTERID,
                       3,
                       rssi_s,
                       &SampleApp_TransID,
@@ -628,20 +667,49 @@ void SampleApp_P2P_SendMessage( void )//参考节点点播给协调器发距离
   }
 }
 
-static void UART_CallBackFunction(uint8 port, uint8 event)
-{
-  uint8 RX_Flag = 0;
-  RX_Length = 0;//接收字符串长度
-  RX_Flag = RX_Length = Hal_UART_RxBufLen(MY_DEFINI_UART_PORT);// 字符串长度
-  
-  if(RX_Flag != 0)// 有数据存在
-  {
-    //读取串口数据
-    HalUARTRead(MY_DEFINI_UART_PORT,RX_BUFFER,RX_Length);
-    {
-      //数据传回串口调用hal_uart.h接口函数
-      HalUARTWrite(MY_DEFINI_UART_PORT,RX_BUFFER,RX_Length);
-    }
-  }
-  
-}
+//static void UART_CallBackFunction(uint8 port, uint8 event)
+//{
+//  uint8 RX_Flag = 0;
+//  RX_Length = 0;//接收字符串长度
+//  RX_Flag = RX_Length = Hal_UART_RxBufLen(MY_DEFINI_UART_PORT);// 字符串长度
+//  
+//  if(RX_Flag != 0)// 有数据存在
+//  {
+//    //读取串口数据
+//    HalUARTRead(MY_DEFINI_UART_PORT,RX_BUFFER,RX_Length);
+//    
+//    {
+//      //数据传回串口调用hal_uart.h接口函数
+////      HalUARTWrite(MY_DEFINI_UART_PORT,RX_BUFFER,RX_Length);
+//      HalLcdWriteString ( RX_BUFFER, HAL_LCD_LINE_3);
+//      if(RX_Length <= RX_MAX_LENGTH)
+//      {
+//        if(REV_Ack_OK() == true)
+//        {
+//          HalLcdWriteString ( "okkkkkkkkk", HAL_LCD_LINE_4);
+//        }
+//      }
+//      
+//      
+//      
+//      *RX_BUFFER = NULL;
+//    }
+//  }
+//  
+//}
+//
+//bool REV_Ack_OK(void)
+//{
+//  uint8 i = 0;
+//  for(;i < RX_MAX_LENGTH;i++)
+//  {
+//    if(RX_BUFFER[i] == 'O')
+//    {
+//      if(RX_BUFFER[i+1] == 'K')
+//      {
+//        return true;
+//      }
+//    }
+//  }
+//  return false;
+//}

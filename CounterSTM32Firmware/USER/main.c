@@ -22,6 +22,8 @@
 #include "usart.h"
 #include "string.h"
 #include "math.h"
+#include "tcp.h"
+#include "esp8266.h"
 
 #define rssi_A 27
 #define rssi_n 3
@@ -45,6 +47,8 @@ int main(void)
 		vu8 key=0;
 		u16 t;  
 		u16 len;	
+	  uint8_t res;
+	  char str[100]={0};
 		u16 times=0;  
 		u16 rssiA = 0, rssiB = 0, rssiC = 0;
 		double dA = 0, dB = 0, dC = 0;
@@ -56,8 +60,26 @@ int main(void)
 //		KEY_Init();          //初始化与按键连接的硬件接口
 		EXTIX_Init();
 		uart_init(115200);	 //串口初始化为115200
+		ESP8266_Init(115200);
 		
 	 meau();
+		
+		OLED_ShowString(0,0, "configing_0");	
+    ESP8266_AT_Test();
+			OLED_ShowString(0,0, "configing_1");	 
+		printf("正在配置ESP8266\r\n");
+    ESP8266_Net_Mode_Choose(STA);
+			OLED_ShowString(0,0, "configing_2");
+    while(!ESP8266_JoinAP(User_ESP8266_SSID, User_ESP8266_PWD));
+			OLED_ShowString(0,0, "configing_3");
+    ESP8266_Enable_MultipleId ( DISABLE );
+			OLED_ShowString(0,0, "configing_4");
+    while(!ESP8266_Link_Server(enumTCP, User_ESP8266_TCPServer_IP, User_ESP8266_TCPServer_PORT, Single_ID_0));
+			OLED_ShowString(0,0, "configing_5");
+    while(!ESP8266_UnvarnishSend());
+			OLED_ShowString(0,0, "configing_6");
+		printf("\r\n配置完成");
+			OLED_ShowString(0,0, "config is ok!");	
 	while(1) 
 	{		
 		if(USART_RX_STA&0x8000)
@@ -93,7 +115,26 @@ int main(void)
 			
 		}
 //========================================================================Meau
-		
+		sprintf (str,"A030B021C047\r\n" );//格式化发送字符串到TCP服务器
+						ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
+        if(TcpClosedFlag) //判断是否失去连接
+        {
+            ESP8266_ExitUnvarnishSend(); //退出透传模式
+            do
+            {
+                res = ESP8266_Get_LinkStatus();     //获取连接状态
+            }   
+            while(!res);
+
+            if(res == 4)                     //确认失去连接，重连
+            {
+                
+                
+                while (!ESP8266_JoinAP(User_ESP8266_SSID, User_ESP8266_PWD ) );
+                while (!ESP8266_Link_Server(enumTCP, User_ESP8266_TCPServer_IP, User_ESP8266_TCPServer_PORT, Single_ID_0 ) );        
+            } 
+            while(!ESP8266_UnvarnishSend());                    
+        }
 //========================================================================Measure
 		
 //========================================================================电压电流测量

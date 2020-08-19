@@ -31,17 +31,6 @@
 uint8_t flag = 1;
 
 
-void meau()//mode0不刷新
-{
-		OLED_Clear();
-		OLED_DrawBMP(96,0,128,2,BMP2);	
-		OLED_ShowString(0,6,"Meau");
-		OLED_ShowString(40,0,"Measure");
-		OLED_ShowString(40,2,"Voltage");
-		OLED_ShowString(40,4,"Animation");
-		OLED_ShowString(72,6,"Lycraft");
-}
-
 int main(void)
  {	
 		vu8 key=0;
@@ -62,7 +51,6 @@ int main(void)
 		uart_init(115200);	 //串口初始化为115200
 		ESP8266_Init(115200);
 		
-	 meau();
 		
 		OLED_ShowString(0,0, "configing_0");	
     ESP8266_AT_Test();
@@ -106,17 +94,28 @@ int main(void)
 			rssiC = (u16)(RevString[10] - 0x30) * 10 + rssiC;
 			rssiC = (u16)(RevString[11] - 0x30) + rssiC;
 			dC=pow(10,(float)(rssiC-rssi_A)/10/rssi_n); 
+			
+			
+			printf("A:%f B:%f C:%f\r\n",dA, dB, dC); 
+			sprintf (str,"A:%f B:%f C:%f\r\n" ,dA, dB, dC);//格式化发送字符串到TCP服务器
+			ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
+			
 		}else
 		{
 			times++;	
 			if(times%200==0)printf("%s %d %d A=%d,B=%d,C=%d\r\n\r\n",RevString,strlen(RevString),sizeof(RevString),rssiA, rssiB, rssiC); 
-				if(times%200 == 0)printf("A距离%f B距离%f C距离%f\r\n",dA, dB, dC); 
+//				if(times%200 == 0)
+//				{
+//					printf("A距离%f B距离%f C距离%f\r\n",dA, dB, dC); 
+//					sprintf (str,"A距离%f B距离%f C距离%f\r\n" ,dA, dB, dC);//格式化发送字符串到TCP服务器
+//					ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
+//				}
+					
 			delay_ms(10);
 			
 		}
-//========================================================================Meau
-		sprintf (str,"A030B021C047\r\n" );//格式化发送字符串到TCP服务器
-						ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
+//========================================================================保证时刻在线
+
         if(TcpClosedFlag) //判断是否失去连接
         {
             ESP8266_ExitUnvarnishSend(); //退出透传模式
@@ -135,11 +134,7 @@ int main(void)
             } 
             while(!ESP8266_UnvarnishSend());                    
         }
-//========================================================================Measure
-		
-//========================================================================电压电流测量
-	
-//=========================================================================方波发生
+
 
 	}	  
 }

@@ -95,8 +95,8 @@
  * GLOBAL VARIABLES
  */
 //uint8 FunctionProfession = ReferenceProfession;//该设备是参考节点
-//uint8 FunctionProfession = BlindProfession;//该设备是盲节点
-uint8 FunctionProfession = CoorProfession;//该设备是协调器
+uint8 FunctionProfession = BlindProfession;//该设备是盲节点
+//uint8 FunctionProfession = CoorProfession;//该设备是协调器
 
 uint16 rssiA = 0, rssiB = 0, rssiC = 0;
 uint8 SendCount = 0;

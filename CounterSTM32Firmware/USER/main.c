@@ -29,6 +29,7 @@
 #define rssi_n 3
 
 uint8_t flag = 1;
+uint16_t MessCount = 0;
 
 
 int main(void)
@@ -99,6 +100,13 @@ int main(void)
 			printf("A:%f B:%f C:%f\r\n",dA, dB, dC); 
 			sprintf (str,"A:%f B:%f C:%f\r\n" ,dA, dB, dC);//格式化发送字符串到TCP服务器
 			ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
+			MessCount++;
+			OLED_ShowString(0,2, "send a mess");
+			OLED_ShowNum(0,4,MessCount,4,16);
+			if(MessCount == 2000)
+			{
+				MessCount = 0;
+			}
 			
 		}else
 		{

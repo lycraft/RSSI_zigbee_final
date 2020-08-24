@@ -25,8 +25,8 @@
 #include "tcp.h"
 #include "esp8266.h"
 
-#define rssi_A 27
-#define rssi_n 3
+#define rssi_A 37
+#define rssi_n 2.5
 
 uint8_t flag = 1;
 uint16_t MessCount = 0;
@@ -39,6 +39,7 @@ int main(void)
 		u16 len;	
 	  uint8_t res;
 	  char str[100]={0};
+		char rsstr[100]={0};
 		u16 times=0;  
 		u16 rssiA = 0, rssiB = 0, rssiC = 0;
 		double dA = 0, dB = 0, dC = 0;
@@ -84,25 +85,29 @@ int main(void)
 			rssiA = (u16)(RevString[1] - 0x30) * 100;
 			rssiA = (u16)(RevString[2] - 0x30) * 10 + rssiA;
 			rssiA = (u16)(RevString[3] - 0x30) + rssiA;
-			dA=pow(10,(float)(rssiA-rssi_A)/10/rssi_n); 
+//			dA=pow(10,(float)(rssiA-rssi_A)/10/rssi_n); 
 			
 			rssiB = (u16)(RevString[5] - 0x30) * 100;
 			rssiB = (u16)(RevString[6] - 0x30) * 10 + rssiB;
 			rssiB = (u16)(RevString[7] - 0x30) + rssiB;
-			dB=pow(10,(float)(rssiB-rssi_A)/10/rssi_n); 
+//			dB=pow(10,(float)(rssiB-rssi_A)/10/rssi_n); 
 			
 			rssiC = (u16)(RevString[9] - 0x30) * 100;
 			rssiC = (u16)(RevString[10] - 0x30) * 10 + rssiC;
 			rssiC = (u16)(RevString[11] - 0x30) + rssiC;
-			dC=pow(10,(float)(rssiC-rssi_A)/10/rssi_n); 
+//			dC=pow(10,(float)(rssiC-rssi_A)/10/rssi_n); 
 			
 			
-			printf("A:%f B:%f C:%f\r\n",dA, dB, dC); 
-			sprintf (str,"A:%f B:%f C:%f\r\n" ,dA, dB, dC);//格式化发送字符串到TCP服务器
-			ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
+			printf("A:%f B:%f C:%f\r\n",dA, dB, dC);
+			
+//			sprintf (str,"_%f_%f_%f\r\n" ,dA, dB, dC);//格式化发送字符串到TCP服务器
+//			ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
 			MessCount++;
 			OLED_ShowString(0,2, "send a mess");
 			OLED_ShowNum(0,4,MessCount,4,16);
+			
+			sprintf (rsstr,"#%d#%d#%d\r\n" ,rssiA, rssiB, rssiC);//格式化发送字符串到TCP服务器
+			ESP8266_SendString ( ENABLE, rsstr, 0, Single_ID_0 );
 			if(MessCount == 2000)
 			{
 				MessCount = 0;
@@ -120,6 +125,9 @@ int main(void)
 //				}
 					
 			delay_ms(10);
+			
+			if(times == 5000)
+				times = 0;
 			
 		}
 //========================================================================保证时刻在线

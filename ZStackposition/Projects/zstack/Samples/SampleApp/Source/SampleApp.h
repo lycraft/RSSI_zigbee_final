@@ -89,6 +89,9 @@ extern "C"
 #define ReferenceProfession     0
 #define BlindProfession         1
 #define CoorProfession          2
+//#define ReferenceProfessionA     3
+//#define ReferenceProfessionB     4
+//#define ReferenceProfessionC     5
   
 /*********************************************************************
  * MACROS

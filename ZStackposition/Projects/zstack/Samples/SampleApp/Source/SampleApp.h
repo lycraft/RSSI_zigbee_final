@@ -83,8 +83,8 @@ extern "C"
 // Flash Command Duration - in milliseconds
 #define SAMPLEAPP_FLASH_DURATION               1000
   
-#define rssi_A    37
-#define rssi_n    2
+//#define rssi_A    37
+//#define rssi_n    2
 
 #define ReferenceProfession     0
 #define BlindProfession         1

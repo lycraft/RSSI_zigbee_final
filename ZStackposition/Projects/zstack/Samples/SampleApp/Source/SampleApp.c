@@ -95,8 +95,8 @@
  * GLOBAL VARIABLES
  */
 //uint8 FunctionProfession = ReferenceProfession;//该设备是参考节点
-uint8 FunctionProfession = BlindProfession;//该设备是盲节点
-//uint8 FunctionProfession = CoorProfession;//该设备是协调器
+//uint8 FunctionProfession = BlindProfession;//该设备是盲节点
+uint8 FunctionProfession = CoorProfession;//该设备是协调器
 
 uint16 rssiA = 0, rssiB = 0, rssiC = 0;
 uint8 SendCount = 0;
@@ -460,37 +460,37 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 
   switch ( pkt->clusterId )
   {
-    case SAMPLEAPP_BLIND_CLUSTERID://参考节点接收盲节点数据进行处理
+    case SAMPLEAPP_BLIND_CLUSTERID://参考节点接收盲节点数据进行处理   均值滤波
       if(zgDeviceLogicalType == ZG_DEVICETYPE_ROUTER && FunctionProfession == ReferenceProfession)//参考节点路由器处理数据
       {
         rssi_val[rssi_index++] = ((~pkt->rssi)+1); // 得到rssi值并保存   
-        if(rssi_index == 6)//当接收到6次rssi后进行平均值计算
+        if(rssi_index == 10)//当接收到10次rssi后进行平均值计算
         {   
           uint8 i,max_i,min_i; 
           uint16 val = 0;
           //去除最大最小值，剩下的求取平均值
           max_i = min_i = 0;          
-          for(i = 1; i<6; i++)
+          for(i = 1; i<10; i++)
           {
             if(rssi_val[i]>rssi_val[max_i])
               max_i = i;              
             if(rssi_val[i]<rssi_val[min_i])
               min_i = i;
         }          
-          for(i = 0; i<6; i++)
+          for(i = 0; i<10; i++)
           {
             if(i!=max_i && i!=min_i)
-              val+=rssi_val[i];//去除最大最小值之后的4次rssi值的总和
+              val+=rssi_val[i];//去除最大最小值之后的8次rssi值的总和
           }          
-          val >>= 2;//右移为除法，右移三维表示除以4（val为4次RSSI值的和）
-        HalLcdWriteValue( val, 10, HAL_LCD_LINE_3);//参考节点OLED 屏幕显示出本次平均信号值
+          val >>= 3;//右移为除法，右移三维表示除以8（val为8次RSSI值的和）
+//        HalLcdWriteValue( val, 10, HAL_LCD_LINE_3);//参考节点OLED 屏幕显示出本次平均信号值
           //      rssi_s[0] ='A';
           rssi_s[0] = val/100+0x30;//ASCII编码 0x30对应数字0 这里加上这个数就是要显示数字字符
           rssi_s[1] = val%100/10+0x30;
           rssi_s[2] = val%10+0x30;//以上三句分别代表得到：米，分米，厘米 
 
           SampleApp_P2P_SendMessage();
-          rssi_index = 0;//每收到6次RSSI值计算一次需要的RSSI均值
+          rssi_index = 0;//每收到10次RSSI值计算一次需要的RSSI均值
 
       
         }
@@ -524,7 +524,7 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
         lcdrs = rssiA * 1000 + rssiB;
         HalLcdWriteValue( lcdrs, 10, HAL_LCD_LINE_3);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
         HalLcdWriteValue( rssiC, 10, HAL_LCD_LINE_4);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
-        sprintf(temp,"A%03dB%03dC%03d\r\n", rssiA, rssiB, rssiC);
+        sprintf(temp,"#%03d#%03d#%03d\r\n", rssiA, rssiB, rssiC);
         HalUARTWrite(0,temp,14 );//发给stm32
         SendCount = 0;
       }
@@ -551,7 +551,7 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
         lcdrs = rssiA * 1000 + rssiB;
         HalLcdWriteValue( lcdrs, 10, HAL_LCD_LINE_3);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
         HalLcdWriteValue( rssiC, 10, HAL_LCD_LINE_4);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
-        sprintf(temp,"A%03dB%03dC%03d\r\n", rssiA, rssiB, rssiC);
+        sprintf(temp,"#%03d#%03d#%03d\r\n", rssiA, rssiB, rssiC);
         HalUARTWrite(0,temp,14 );//发给stm32
         SendCount = 0;
       } 
@@ -576,7 +576,7 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
         lcdrs = rssiA * 1000 + rssiB;
         HalLcdWriteValue( lcdrs, 10, HAL_LCD_LINE_3);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
         HalLcdWriteValue( rssiC, 10, HAL_LCD_LINE_4);//xietiaoqi节点OLED 屏幕显示出本次平均信号值
-        sprintf(temp,"A%03dB%03dC%03d\r\n", rssiA, rssiB, rssiC);
+        sprintf(temp,"#%03d#%03d#%03d\r\n", rssiA, rssiB, rssiC);
         HalUARTWrite(0,temp,14 );//发送给stm32
         SendCount = 0;
       } 

@@ -38,11 +38,11 @@ int main(void)
 		u16 t;  
 		u16 len;	
 	  uint8_t res;
-	  char str[100]={0};
+//	  char str[100]={0};
 		char rsstr[100]={0};
 		u16 times=0;  
 		u16 rssiA = 0, rssiB = 0, rssiC = 0;
-		double dA = 0, dB = 0, dC = 0;
+//		double dA = 0, dB = 0, dC = 0;
 		char RevString[128] = {32,32,32,32,32,32,32,32,32};
 		
 		delay_init();	    	 //延时函数初始化	  
@@ -98,7 +98,7 @@ int main(void)
 //			dC=pow(10,(float)(rssiC-rssi_A)/10/rssi_n); 
 			
 			
-			printf("A:%f B:%f C:%f\r\n",dA, dB, dC);
+//			printf("A:%f B:%f C:%f\r\n",dA, dB, dC);
 			
 //			sprintf (str,"_%f_%f_%f\r\n" ,dA, dB, dC);//格式化发送字符串到TCP服务器
 //			ESP8266_SendString ( ENABLE, str, 0, Single_ID_0 );
@@ -108,6 +108,7 @@ int main(void)
 			
 			sprintf (rsstr,"#%d#%d#%d\r\n" ,rssiA, rssiB, rssiC);//格式化发送字符串到TCP服务器
 			ESP8266_SendString ( ENABLE, rsstr, 0, Single_ID_0 );
+			
 			if(MessCount == 2000)
 			{
 				MessCount = 0;
@@ -116,7 +117,7 @@ int main(void)
 		}else
 		{
 			times++;	
-			if(times%200==0)printf("%s %d %d A=%d,B=%d,C=%d\r\n\r\n",RevString,strlen(RevString),sizeof(RevString),rssiA, rssiB, rssiC); 
+//			if(times%200==0)printf("%s %d %d A=%d,B=%d,C=%d\r\n\r\n",RevString,strlen(RevString),sizeof(RevString),rssiA, rssiB, rssiC); 
 //				if(times%200 == 0)
 //				{
 //					printf("A距离%f B距离%f C距离%f\r\n",dA, dB, dC); 

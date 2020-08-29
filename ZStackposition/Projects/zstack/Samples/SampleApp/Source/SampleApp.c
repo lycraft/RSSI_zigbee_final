@@ -95,8 +95,8 @@
  * GLOBAL VARIABLES
  */
 //uint8 FunctionProfession = ReferenceProfession;//该设备是参考节点
-//uint8 FunctionProfession = BlindProfession;//该设备是盲节点
-uint8 FunctionProfession = CoorProfession;//该设备是协调器
+uint8 FunctionProfession = BlindProfession;//该设备是盲节点
+//uint8 FunctionProfession = CoorProfession;//该设备是协调器
 
 uint16 rssiA = 0, rssiB = 0, rssiC = 0;
 uint8 SendCount = 0;
@@ -208,7 +208,7 @@ void SampleApp_Init( uint8 task_id )
   SampleApp_NwkState = DEV_INIT;
   SampleApp_TransID = 0;
   
-  macRadioUpdateTxPower();
+//  macRadioUpdateTxPower();
 //  halUARTCfg_t uartConfig;//初始化串口使用
   //------------------------配置串口---------------------------------
   MT_UartInit();                    //串口初始化
@@ -430,7 +430,7 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
      * This device will not receive the Flash Command from this
      * device (even if it belongs to group 1).
      */
-//    SampleApp_SendFlashMessage( SAMPLEAPP_FLASH_DURATION );
+    SampleApp_SendFlashMessage( SAMPLEAPP_FLASH_DURATION );
   }
 
   if ( keys & HAL_KEY_SW_2 )

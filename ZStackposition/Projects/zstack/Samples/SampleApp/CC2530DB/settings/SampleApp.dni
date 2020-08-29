@@ -1,5 +1,5 @@
 [DebugChecksum]
-Checksum=-1741676334
+Checksum=330926024
 [DisAssemblyWindow]
 NumStates=_ 1
 State 1=_ 1
@@ -27,7 +27,7 @@ LogFile=_ ""
 [Breakpoints]
 Count=0
 [ChipconEmu]
-Stop timers on halt=0
+Stop timers on halt=1
 Leave target running=1
 [Aliases]
 Count=0
